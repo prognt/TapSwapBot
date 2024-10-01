@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     AUTO_UPGRADE_TOWN: bool = True
     MAX_TOWN_LEVEL: int = 20
 
+    AUTO_COMPLETE_CINEMA_MISSIONS: bool = False
+
     APPLY_DAILY_ENERGY: bool = True
     APPLY_DAILY_TURBO: bool = True
 

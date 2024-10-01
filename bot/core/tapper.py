@@ -1,7 +1,7 @@
 import json
 import asyncio
 from time import time
-from random import randint
+from random import randint, shuffle
 
 import aiohttp
 from aiocfscrape import CloudflareScraper
@@ -14,6 +14,7 @@ from pyrogram.raw.functions.messages import RequestWebView
 from bot.config import settings
 from bot.utils import logger
 from bot.utils.town import build_town
+from bot.utils.cinema import get_visible_cinema_missions, get_active_missions, complete_cinema_mission
 from bot.utils.scripts import escape_html, login_in_browser
 from bot.exceptions import InvalidSession
 from .headers import headers
@@ -254,6 +255,8 @@ class Tapper:
 
                                 await asyncio.sleep(delay=1)
 
+
+
                 # Строим город
                 if settings.AUTO_UPGRADE_TOWN is True:
                     logger.info(f"{self.session_name} | Sleep 15s before upgrade Build")
@@ -271,6 +274,28 @@ class Tapper:
                                 proxy_conn.close()
                         access_token_created_time = 0
                         continue
+
+                # Смотрим youtube
+                if settings.AUTO_COMPLETE_CINEMA_MISSIONS is True:
+                    logger.info(f"{self.session_name} | Sleep 15s before start processing Cinema")
+                    await asyncio.sleep(delay=15)
+
+                    visible_missions = get_visible_cinema_missions(profile_data) #  видимая пачка, 4 последних миссии
+                    shuffle(visible_missions)
+
+                    for mission in visible_missions:
+                        if player_data := await complete_cinema_mission(self, http_client, mission, profile_data):
+                            profile_data.update(player_data)
+
+                            if mission.id in player_data.get('player', {'claims': []})['claims']:
+                                logger.info(f"{self.session_name} | Sleep 5s before claim <m>{mission.id}</m> reward")
+                                await asyncio.sleep(delay=5)
+
+                                status = await self.claim_reward(http_client=http_client, task_id=mission.id)
+                                if status is True:
+                                    logger.success(f"{self.session_name} | Successfully claim <m>{mission.id}</m> reward")
+
+                                    await asyncio.sleep(delay=5)
 
                 taps = randint(a=settings.RANDOM_TAPS_COUNT[0], b=settings.RANDOM_TAPS_COUNT[1])
 
@@ -394,7 +419,7 @@ class Tapper:
                 raise error
 
             except Exception as error:
-                logger.error(f"{self.session_name} | Unknown error: {escape_html(error)}")
+                logger.exception(f"{self.session_name} | Unknown error: {escape_html(error)}")
                 await asyncio.sleep(delay=3)
 
             else:

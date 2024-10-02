@@ -187,6 +187,8 @@ async def complete_cinema_mission(self, http_client: aiohttp.ClientSession,
             else:
                 logger.warning(f"{self.session_name} | Error starting Mission <m>{mission.id}</m>, skipping...")
                 return {}
+        else:
+            return {}
 
     active_mission = active_missions[mission.id]
 

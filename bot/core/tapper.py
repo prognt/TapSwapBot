@@ -419,7 +419,7 @@ class Tapper:
                 raise error
 
             except Exception as error:
-                logger.exception(f"{self.session_name} | Unknown error: {escape_html(error)}")
+                logger.error(f"{self.session_name} | Unknown error: {escape_html(error)}")
                 await asyncio.sleep(delay=3)
 
             else:

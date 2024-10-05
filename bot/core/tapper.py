@@ -296,6 +296,8 @@ class Tapper:
                                     logger.success(f"{self.session_name} | Successfully claim <m>{mission.id}</m> reward")
 
                                     await asyncio.sleep(delay=5)
+                    else:
+                        logger.info(f"{self.session_name} | No Cinema missions available")
 
                 taps = randint(a=settings.RANDOM_TAPS_COUNT[0], b=settings.RANDOM_TAPS_COUNT[1])
 
